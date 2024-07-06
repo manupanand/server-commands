@@ -1,7 +1,7 @@
 #this is  for configuring mongodb on server
 #
 # create a mongo repo file
-cp mongo.repo /etc/yum.repos.d/mongodb-org.repo
+cp mongodb-org.repo /etc/yum.repos.d/mongodb-org.repo
 dnf install mongodb-org -y
 systemctl enable mongod
 systemctl daemon-reload
