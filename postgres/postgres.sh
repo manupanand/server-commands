@@ -5,5 +5,3 @@ sudo /usr/pgsql-16/bin/postgresql-16-setup initdb
 sudo systemctl enable postgresql-16
 sudo systemctl start postgresql-16
 postgresql-setup --initdb
-systemctl enable postgresql.service
-systemctl start postgresql.service
