@@ -6,7 +6,7 @@ RESET_COLOR="\[\033[0m\]"  # Reset color and style
 # Define function to set the prompt with username and systeminfo colors
 set_prompt() {
     local promptname="$1"
-    PS1="${USER_COLOR}\u${RESET_COLOR}@${SYSTEM_COLOR}${promptname}${RESET_COLOR} \W \$ "
+    PS1="${USER_COLOR}\u${RESET_COLOR}@${SYSTEM_COLOR}${promptname}${RESET_COLOR}:${SYSTEM_COLOR}\[\033[1;37m\]\w${RESET_COLOR} \$ "
 }
 
 # Initial prompt setting
