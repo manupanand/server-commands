@@ -1,3 +1,3 @@
 
-dnf install golang -y
+sudo dnf install golang -y
 go version
