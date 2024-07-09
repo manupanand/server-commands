@@ -1,3 +1,7 @@
+# sudo dnf install ${library} -y
+#   go version
 
-sudo dnf install golang -y
-go version
+
+source ../common.sh
+library=golang
+goLang
