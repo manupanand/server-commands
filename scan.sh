@@ -17,4 +17,4 @@ sudo less /var/log/snort/alert
 /usr/bin/clamscan -r /home --log=/var/log/clamav/daily_scan.log --quiet
 
 # Run Snort
-/usr/bin/snort -A console -q -c /etc/snort/snort.conf -i eth0
+sudo /usr/sbin/snort -A console -q -c /etc/snort/snort.conf -i wlxf0a7319fea00
