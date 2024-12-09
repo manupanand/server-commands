@@ -1,0 +1,8 @@
+[Unit]
+Description=ClamAv system-wide scan
+After=network.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/clascan -r --remove --log=/var/log/clamscan.log
+User=root

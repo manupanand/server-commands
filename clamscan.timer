@@ -1,0 +1,10 @@
+[Unit]
+Description=Run ClamAV system scan periodically
+
+[Timer]
+OnBootSec=5min
+OnUnitActiveSec=1d
+Unit=clamscan.service
+
+[Install]
+WantedBy=timers.target
