@@ -4,5 +4,5 @@ After=network.target
 
 [Service]
 Type=oneshot
-ExecStart=/usr/bin/clascan -r --remove --log=/var/log/clamscan.log
+ExecStart=/usr/bin/clamscan -r --remove --log=/var/log/clamav/clamscan.log
 User=root

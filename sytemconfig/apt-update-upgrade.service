@@ -1,0 +1,14 @@
+[Unit]
+Description=Run apt update, upgrade, and security upgrades with logging
+After=network.target
+
+[Service]
+Type=oneshot
+ExecStart=/bin/bash -c "/usr/bin/apt-get update && /usr/bin/apt-get upgrade -y && /usr/bin/unattended-upgrade -d >> /var/log/apt-upgrade-update.log 2>&1"
+User=root
+Environment="DEBIAN_FRONTEND=noninteractive"
+StandardOutput=append:/var/log/apt-update-upgrade.log
+StandardError=append:/var/log/apt-update-upgrade.log
+
+[Install]
+WantedBy=multi-user.target

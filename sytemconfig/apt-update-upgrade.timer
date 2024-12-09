@@ -1,0 +1,9 @@
+[Unit]
+Description=Run apt update, upgrade, and security upgrades 5 minutes after boot
+
+[Timer]
+OnBootSec=5min
+Unit=apt-update-upgrade.service
+
+[Install]
+WantedBy=timers.target
