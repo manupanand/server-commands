@@ -1,0 +1,10 @@
+#!/bin/bash
+
+LAST_TAG=$(git tag --list | sort | tail -1)
+MAJOR_VERSION=$(echo ${LAST_TAG} | awk -F '{print $1}')
+MINOR_VERSION=$(echo ${LAST_TAG} | awk -F '{print $2}')
+REL_VERSION=$(git tag --list |awk -F . '{print $3} |sort -n |tail -1')
+REL_VERSION=$($(REL_VERSION+1))
+FINAL_VERSON="${MAJOR_VERSION}.${MINOR_VERSION}.${REL_VERSION}"
+
+git tag $FINAL_VERSION && git push --tag

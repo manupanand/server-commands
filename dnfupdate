@@ -1,0 +1,81 @@
+#!/bin/bash
+
+LOG_FILE="/var/log/yumupdate.log"
+
+check() {
+    if [ $1 -eq 0 ]; then
+        echo -e "\e[32mSUCCESS\e[0m"
+    else
+        echo -e "\e[31mFAILED\e[0m"
+    fi
+}
+
+NULLIFY="/dev/null"
+
+echo "Updating package index..."
+sudo dnf check-update -y &>>$LOG_FILE
+check $?
+
+echo "Upgrading installed packages..."
+sudo dnf upgrade -y &>>$LOG_FILE
+check $?
+
+echo "Installing system maintenance tools..."
+sudo dnf install -y dnf-utils &>>$LOG_FILE
+check $?
+
+# Clean up unnecessary packages and cache
+echo "Performing system cleanup..."
+sudo dnf autoremove -y &>>$LOG_FILE
+check $?
+
+sudo dnf clean all &>>$LOG_FILE
+check $?
+
+# Perform a full system upgrade
+echo "Performing full system upgrade..."
+sudo dnf distro-sync -y &>>$LOG_FILE
+check $?
+
+# Installing `yum-cron` for automatic updates (for RHEL 7)
+echo "Installing yum-cron (for RHEL 7) or dnf-automatic (for RHEL 8/9)..."
+if grep -q "release 7" /etc/redhat-release; then
+    sudo yum install -y yum-cron &>>$LOG_FILE
+    check $?
+    sudo systemctl enable --now yum-cron &>>$LOG_FILE
+    check $?
+else
+    sudo dnf install -y dnf-automatic &>>$LOG_FILE
+    check $?
+    sudo systemctl enable --now dnf-automatic.timer &>>$LOG_FILE
+    check $?
+fi
+
+# Checking and updating ClamAV (Antivirus)
+if ! command -v freshclam &>/dev/null; then
+    echo "ClamAV (freshclam) is not installed. Installing ClamAV..."
+    sudo dnf install -y clamav clamav-update &>>$LOG_FILE
+    check $?
+fi
+
+echo "Updating ClamAV virus definitions..."
+update_output=$(sudo freshclam 2>&1)
+
+if [ $? -eq 0 ]; then
+    echo "ClamAV virus definitions are up to date."
+else
+    echo "Error updating ClamAV definitions:"
+    echo "$update_output"
+    exit 1
+fi
+
+# Display ClamAV version
+clam_version=$(clamscan --version | awk '{print $2}')
+if [ -n "$clam_version" ]; then
+    echo "ClamAV Version: $clam_version"
+else
+    echo "Unable to retrieve ClamAV version."
+fi
+
+echo "All steps completed successfully!"
+exit 0
