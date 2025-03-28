@@ -1,71 +1,76 @@
 #!/bin/bash
 
+# Set non-interactive mode for APT to prevent user prompts
+export DEBIAN_FRONTEND=noninteractive
+
 LOG_FILE="/var/log/aptupdate.log"
 
+# Function to check command execution status
 check() {
-    if [ $1 -eq 0 ]; then
+    if [ $? -eq 0 ]; then
         echo -e "\e[32mSUCCESS\e[0m"
     else
         echo -e "\e[31mFAILED\e[0m"
     fi
 }
 
-NULLIFY="/dev/null"
-
+# Update package index
 echo "Updating package index..."
 sudo apt update -y &>>$LOG_FILE
-check $?
+check
 
-echo "Upgrading package apt..."
+# Upgrade all installed packages
+echo "Upgrading installed packages..."
 sudo apt upgrade -y &>>$LOG_FILE
-check $?
+check
 
-echo "Updating ubuntu-advantage-tools..."
+# Install Ubuntu Advantage tools (optional)
+echo "Installing ubuntu-advantage-tools..."
 sudo apt install ubuntu-advantage-tools -y &>>$LOG_FILE
-check $?
+check
 
+# Run update again
 sudo apt update &>>$LOG_FILE
-check $?
+check
 
 # Perform distribution upgrade
 echo "Performing distribution upgrade..."
 sudo apt-get clean &>>$LOG_FILE
-check $?
+check
 
 sudo apt-get autoremove -y &>>$LOG_FILE
-check $?
+check
 
 sudo apt autoremove --purge -y &>>$LOG_FILE
-check $?
+check
 
 sudo apt autoclean &>>$LOG_FILE
-check $?
+check
 
-# Prevent interactive prompts
-export DEBIAN_FRONTEND=noninteractive
 sudo apt dist-upgrade -y &>>$LOG_FILE
-check $?
+check
 
-# Install unattended-upgrades package
+# Install unattended-upgrades
 echo "Installing unattended-upgrades..."
 sudo apt install unattended-upgrades -y &>>$LOG_FILE
-check $?
+check
 
-# Reconfigure unattended-upgrades with low priority attended upgrade
+# Reconfigure unattended-upgrades
 echo "Reconfiguring unattended-upgrades..."
-sudo dpkg --configure -a  &>>$LOG_FILE
-check $?
+sudo dpkg --configure -a &>>$LOG_FILE
+check
 
 sudo dpkg-reconfigure --priority=low unattended-upgrades &>>$LOG_FILE
-check $?
+check
 
+# Clean temporary files
 sudo rm -rf /var/tmp/*    
-sudo apt-get clean    &>>$LOG_FILE 
-sudo apt-get autoremove &>>$LOG_FILE
-check $?
+sudo apt-get clean &>>$LOG_FILE 
+sudo apt-get autoremove -y &>>$LOG_FILE
+check
 
 # Check if ClamAV is installed
-if ! command -v freshclam &>/dev/null; then
+if ! command -v freshclam &> /dev/null; then
     echo "ClamAV (freshclam) is not installed. Please install it first."
     exit 1
 fi
@@ -74,6 +79,7 @@ fi
 echo "Checking and updating ClamAV virus definitions..."
 update_output=$(sudo freshclam 2>&1)
 
+# Check freshclam exit status
 if [ $? -eq 0 ]; then
     echo "ClamAV virus definitions are up to date."
 else
@@ -82,7 +88,7 @@ else
     exit 1
 fi
 
-# Display ClamAV database version
+# Display ClamAV version
 clam_version=$(sudo clamscan --version | grep 'ClamAV' | awk '{print $2}')
 if [ -n "$clam_version" ]; then
     echo "ClamAV Version: $clam_version"
@@ -90,6 +96,7 @@ else
     echo "Unable to retrieve ClamAV version."
 fi
 
+# Clean Snap cache
 sudo rm -rf /var/lib/snapd/cache/* &>>$LOG_FILE
 
 echo "All steps completed."
