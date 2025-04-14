@@ -1,0 +1,11 @@
+#reset the node
+sudo kubeadm reset -f
+sudo systemctl restart containerd kubelet
+#remove old content
+sudo rm -rf /etc/kubernetes /var/lib/kubelet /var/lib/cni /var/lib/etcd
+# remove port 10250 check
+sudo netstat -lntpu |grep 10250
+sudo systemctl restart containerd kubelet
+
+# run join command
+echo "run  join command now"

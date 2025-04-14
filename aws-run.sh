@@ -113,6 +113,7 @@ then enter password
 # Define log file
 LOG_FILE="/var/log/startup_script.log"
 sudo touch $LOG_FILE
+sudo chmod 777 $LOG_FILE
 # Redirect stdout and stderr to log file
 
 
