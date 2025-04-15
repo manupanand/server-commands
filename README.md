@@ -1,2 +1,2 @@
 # server-commands
-This repo for  RHEL server configuration scripts
+This repo for  RHEL  and debian server configuration scripts
