@@ -2,3 +2,4 @@
 
 - hostnamectl  - hostname details of system
 - whoami       - current username
+- uname        - kernel info
