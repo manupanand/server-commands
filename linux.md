@@ -8,3 +8,6 @@
 - uptime       - how long system is running
 - whoami       - current user name
 - id           - uid,gid,group info
+- useradd      - add user in rhel
+- adduser      - add user in ubuntu         
+
