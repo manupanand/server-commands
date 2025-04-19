@@ -9,5 +9,8 @@
 - whoami       - current user name
 - id           - uid,gid,group info
 - useradd      - add user in rhel
-- adduser      - add user in ubuntu         
+- adduser      - add user in ubuntu  
+- chmod        - change mode
+- chown        - chaneg ownership
+       
 
