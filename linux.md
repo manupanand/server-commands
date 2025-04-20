@@ -11,6 +11,7 @@
 - useradd      - add user in rhel
 - adduser      - add user in ubuntu  
 - chmod        - change mode
-- chown        - change ownership
+- chown        - change ownership 
+- newusers     - add users from list
 
 
