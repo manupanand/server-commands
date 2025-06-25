@@ -1,0 +1,59 @@
+#!/bin/bash
+set -euo pipefail
+
+LOG_FILE="/var/log/cleanup.log"
+
+# Rotate old logs (keep 3 versions)
+rotate_logs() {
+    [ -f "${LOG_FILE}.2.gz" ] && mv "${LOG_FILE}.2.gz" "${LOG_FILE}.3.gz"
+    [ -f "${LOG_FILE}.1.gz" ] && mv "${LOG_FILE}.1.gz" "${LOG_FILE}.2.gz"
+    [ -f "${LOG_FILE}" ] && gzip -c "$LOG_FILE" > "${LOG_FILE}.1.gz" && > "$LOG_FILE"
+}
+echo "clearing logs.."
+rotate_logs
+
+log() {
+    local LEVEL="$1"
+    local ACTION="$2"
+    local TARGET="$3"
+    echo "$(date '+%Y-%m-%d %H:%M:%S') [$LEVEL] $ACTION => $TARGET" >> "$LOG_FILE"
+}
+
+# Clean user directories
+echo "clear directories"
+for user_dir in /home/*; do
+    [ -d "$user_dir" ] || continue
+
+    rm -rf "$user_dir/.cache/"* && log "INFO" "Cleared cache" "$user_dir/.cache"
+    rm -rf "$user_dir/.local/share/Trash/files/"* && log "INFO" "Cleared trash files" "$user_dir/.local/share/Trash/files"
+    rm -rf "$user_dir/.local/share/Trash/info/"* && log "INFO" "Cleared trash info" "$user_dir/.local/share/Trash/info"
+
+    for ff_cache in "$user_dir/.mozilla/firefox/"*.default-release/cache2; do
+        [ -d "$ff_cache" ] && rm -rf "$ff_cache" && log "INFO" "Cleared Firefox cache" "$ff_cache"
+    done
+done
+
+# Root user cleanup
+echo "root user clean up"
+rm -rf /root/.cache/* && log "INFO" "Cleared root cache" "/root/.cache"
+rm -rf /root/.local/share/Trash/files/* && log "INFO" "Cleared root trash files" "/root/.local/share/Trash/files"
+rm -rf /root/.local/share/Trash/info/* && log "INFO" "Cleared root trash info" "/root/.local/share/Trash/info"
+
+# Safe cleanup of /tmp and /var/tmp
+find /tmp -type f -atime +2 -print -delete | while read -r file; do
+    log "INFO" "Deleted old /tmp file" "$file"
+done
+
+find /var/tmp -type f -atime +7 -print -delete | while read -r file; do
+    log "INFO" "Deleted old /var/tmp file" "$file"
+done
+
+
+echo "cleaning docker :" 
+/usr/local/bin/dockerclean
+
+echo "clear cache"
+/usr/local/bin/clearcache
+
+echo "cleaning snap old packages"
+/usr/local/bin/snapremove
