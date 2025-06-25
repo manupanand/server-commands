@@ -1,0 +1,66 @@
+//@version=6
+indicator("MY_supertrend+EMA+weightstock", overlay=true)
+
+// === INPUTS ===
+symbolsInput = input.string("NSE:RELIANCE,NSE:TCS,NSE:HDFCBANK,NSE:ICICIBANK,NSE:KOTAKBANK,NSE:SBIN", title="Index Components (comma-separated)")
+lower_tf = input.timeframe("1", title="Lower timeframe to simulate real-time")
+symbolList = str.split(symbolsInput, ",")
+symbolCount = array.size(symbolList)
+
+// === TABLE SETUP ===
+var table t = table.new(position.top_right, columns=3, rows=symbolCount + 1, border_width=1)
+if bar_index == 1
+    table.cell(t, 0, 0, "Symbol", bgcolor=color.gray, text_color=color.white)
+    table.cell(t, 1, 0, "Price",  bgcolor=color.gray, text_color=color.white)
+    table.cell(t, 2, 0, "% Chg",  bgcolor=color.gray, text_color=color.white)
+
+// === FUNCTION TO GET LOWER TF PRICE & DAILY OPEN ===
+f_get_real_time_data(_sym, _lower_tf) =>
+    arr = request.security_lower_tf(_sym, _lower_tf, close)
+    price = array.size(arr) > 0 ? array.get(arr, array.size(arr) - 1) : na
+    open_ = request.security(_sym, "D", open)
+    chg = na(price) or na(open_) ? na : (price - open_) / open_ * 100
+    [price, chg]
+
+// === MAIN LOOP ===
+for i = 0 to symbolCount - 1
+    sym = str.trim(array.get(symbolList, i))
+    [price, change] = f_get_real_time_data(sym, lower_tf)
+    color_change = change >= 0 ? color.green : color.red
+
+    table.cell(t, 0, i + 1, text=sym, text_color=color.white)
+    table.cell(t, 1, i + 1, text=str.tostring(price, format.mintick), text_color=color.white)
+    table.cell(t, 2, i + 1, text=str.tostring(change, format.percent), text_color=color_change)
+
+
+// === FUNCTION TO CALCULATE SUPERTREND ===
+f_supertrend(_atrPeriod, _factor) =>
+    atr = ta.atr(_atrPeriod)
+    hl2 = (high + low) / 2
+    upperBand = hl2 + _factor * atr
+    lowerBand = hl2 - _factor * atr
+    var float trend = na
+    var bool inUptrend = true
+    inUptrend := close > trend ? true : close < trend ? false : inUptrend
+    trend := inUptrend ? lowerBand : upperBand
+    [trend, inUptrend]
+
+// === SUPERTREND 1 (21, 1.0) ===
+atr1 = input.int(21, title="Supertrend 1 ATR Period")
+factor1 = input.float(1.0, title="Supertrend 1 Factor", step=0.1)
+[trend1, up1] = f_supertrend(atr1, factor1)
+color1 = up1 ? color.green : color.red
+plot(trend1, color=color1, title="Supertrend 1 (21, 1.0)", linewidth=2)
+
+// === SUPERTREND 2 (21, 1.5) ===
+atr2 = 21
+factor2 = 1.5
+[trend2, up2] = f_supertrend(atr2, factor2)
+color2 = up2 ? color.blue : color.purple
+plot(trend2, color=color2, title="Supertrend 2 (21, 1.5)", linewidth=2)
+
+// === EMA INDICATORS ===
+ema25 = ta.ema(close, 25)
+ema50 = ta.ema(close, 50)
+plot(ema25, color=color.orange, title="EMA 25", linewidth=1)
+plot(ema50, color=color.teal, title="EMA 50", linewidth=1)

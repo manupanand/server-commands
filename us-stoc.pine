@@ -1,0 +1,34 @@
+//@version=6
+indicator("📊 US Stocks Real-Time-ish Table", overlay=true)
+
+// === INPUTS ===
+symbolsInput = input.string("NASDAQ:AAPL,NASDAQ:GOOGL,NASDAQ:MSFT,NASDAQ:NVDA", title="US Stocks (comma-separated)")
+lower_tf     = input.timeframe("1", title="Lower TF for live update (e.g. 1,5)")
+symbolList   = str.split(symbolsInput, ",")
+symbolCount  = array.size(symbolList)
+
+// === TABLE INITIALIZATION ===
+var table t = table.new(position.top_right, columns=3, rows=symbolCount + 1, border_width=1)
+
+// === HEADER ROW ===
+if bar_index == 1
+    table.cell(t, 0, 0, "Symbol", bgcolor=color.gray, text_color=color.white, text_size=size.small)
+    table.cell(t, 1, 0, "Price",  bgcolor=color.gray, text_color=color.white, text_size=size.small)
+    table.cell(t, 2, 0, "% Chg",  bgcolor=color.gray, text_color=color.white, text_size=size.small)
+
+// === FUNCTION TO FETCH PRICE FROM LOWER TF ===
+f_get_realtime_data(_sym, _lower_tf) =>
+    arr = request.security_lower_tf(_sym, _lower_tf, close)
+    price = array.size(arr) > 0 ? array.get(arr, array.size(arr) - 1) : na
+    day_open = request.security(_sym, "D", open)
+    pct = na(price) or na(day_open) ? na : (price - day_open) / day_open * 100
+    [price, pct]
+
+// === MAIN LOOP ===
+for i = 0 to symbolCount - 1
+    sym = str.trim(array.get(symbolList, i))
+    [price, chg] = f_get_realtime_data(sym, lower_tf)
+    color_chg = chg >= 0 ? color.green : color.red
+    table.cell(t, 0, i + 1, sym, text_color=color.white)
+    table.cell(t, 1, i + 1, str.tostring(price, format.mintick), text_color=color.white)
+    table.cell(t, 2, i + 1, str.tostring(chg, format.percent), text_color=color_chg)

@@ -1,0 +1,168 @@
+//@version=6
+indicator("Percentage Retracement from ATH", shorttitle="ATH % Retracement", overlay=true)
+
+// ──────────────────────────────────────────────
+// INPUTS
+// ──────────────────────────────────────────────
+// Custom Date Settings
+useCustomStartDate = input.bool(false, title="Use Custom Start Date", group="Custom Date Settings")
+startTime        = input.time(timestamp("01 Jan 2020 00:00 +0000"), title="Custom Start Date", group="Custom Date Settings")
+
+// Label Settings
+labelSizeInput = input.string("Normal", options=["Huge", "Large", "Normal", "Small", "Tiny"], title="Label Size", group="Label Settings")
+labelOffset    = input.int(5, step=5, title="Label Offset (bars)", group="Label Settings")
+
+// Visibility Settings
+showAllLabels  = input.bool(true, title="Show All Labels", group="Visibility Settings")
+showAllLines   = input.bool(true, title="Show All Lines", group="Visibility Settings")
+
+// Values
+value_ath = input.float(0, "", minval=-100, maxval=0, group="Lines and Labels Settings", inline="ATH")
+value_05  = input.float(-5, "", minval=-100, maxval=0, group="Lines and Labels Settings", inline="05")
+value_10  = input.float(-10, "", minval=-100, maxval=0, group="Lines and Labels Settings", inline="10")
+value_20  = input.float(-20, "", minval=-100, maxval=0, group="Lines and Labels Settings", inline="20")
+value_30  = input.float(-30, "", minval=-100, maxval=0, group="Lines and Labels Settings", inline="30")
+value_40  = input.float(-40, "", minval=-100, maxval=0, group="Lines and Labels Settings", inline="40")
+value_50  = input.float(-50, "", minval=-100, maxval=0, group="Lines and Labels Settings", inline="50")
+value_60  = input.float(-60, "", minval=-100, maxval=0, group="Lines and Labels Settings", inline="60")
+value_70  = input.float(-70, "", minval=-100, maxval=0, group="Lines and Labels Settings", inline="70")
+value_80  = input.float(-80, "", minval=-100, maxval=0, group="Lines and Labels Settings", inline="80")
+value_90  = input.float(-90, "", minval=-100, maxval=0, group="Lines and Labels Settings", inline="90")
+value_95  = input.float(-95, "", minval=-100, maxval=0, group="Lines and Labels Settings", inline="95")
+
+// Label visibility for each level
+show_athLabel = input.bool(true, "Label", group="Lines and Labels Settings", inline="ATH")
+show_05Label  = input.bool(true, "Label", group="Lines and Labels Settings", inline="05")
+show_10Label  = input.bool(true, "Label", group="Lines and Labels Settings", inline="10")
+show_20Label  = input.bool(true, "Label", group="Lines and Labels Settings", inline="20")
+show_30Label  = input.bool(true, "Label", group="Lines and Labels Settings", inline="30")
+show_40Label  = input.bool(true, "Label", group="Lines and Labels Settings", inline="40")
+show_50Label  = input.bool(true, "Label", group="Lines and Labels Settings", inline="50")
+show_60Label  = input.bool(true, "Label", group="Lines and Labels Settings", inline="60")
+show_70Label  = input.bool(true, "Label", group="Lines and Labels Settings", inline="70")
+show_80Label  = input.bool(true, "Label", group="Lines and Labels Settings", inline="80")
+show_90Label  = input.bool(true, "Label", group="Lines and Labels Settings", inline="90")
+show_95Label  = input.bool(true, "Label", group="Lines and Labels Settings", inline="95")
+
+// Line visibility for each level
+show_athLine = input.bool(true, "Line", group="Lines and Labels Settings", inline="ATH")
+show_05Line  = input.bool(true, "Line", group="Lines and Labels Settings", inline="05")
+show_10Line  = input.bool(true, "Line", group="Lines and Labels Settings", inline="10")
+show_20Line  = input.bool(true, "Line", group="Lines and Labels Settings", inline="20")
+show_30Line  = input.bool(true, "Line", group="Lines and Labels Settings", inline="30")
+show_40Line  = input.bool(true, "Line", group="Lines and Labels Settings", inline="40")
+show_50Line  = input.bool(true, "Line", group="Lines and Labels Settings", inline="50")
+show_60Line  = input.bool(true, "Line", group="Lines and Labels Settings", inline="60")
+show_70Line  = input.bool(true, "Line", group="Lines and Labels Settings", inline="70")
+show_80Line  = input.bool(true, "Line", group="Lines and Labels Settings", inline="80")
+show_90Line  = input.bool(true, "Line", group="Lines and Labels Settings", inline="90")
+show_95Line  = input.bool(true, "Line", group="Lines and Labels Settings", inline="95")
+
+// Colours for each level
+colour_athLabel = input.color(color.new(color.white, 70), "", group="Lines and Labels Settings", inline="ATH")
+colour_05Label  = input.color(color.new(color.green, 70), "", group="Lines and Labels Settings", inline="05")
+colour_10Label  = input.color(color.new(color.green, 70), "", group="Lines and Labels Settings", inline="10")
+colour_20Label  = input.color(color.new(color.orange, 70), "", group="Lines and Labels Settings", inline="20")
+colour_30Label  = input.color(color.new(color.orange, 70), "", group="Lines and Labels Settings", inline="30")
+colour_40Label  = input.color(color.new(color.orange, 70), "", group="Lines and Labels Settings", inline="40")
+colour_50Label  = input.color(color.new(color.red, 0), "", group="Lines and Labels Settings", inline="50")
+colour_60Label  = input.color(color.new(color.red, 70), "", group="Lines and Labels Settings", inline="60")
+colour_70Label  = input.color(color.new(color.red, 70), "", group="Lines and Labels Settings", inline="70")
+colour_80Label  = input.color(color.new(color.red, 70), "", group="Lines and Labels Settings", inline="80")
+colour_90Label  = input.color(color.new(color.red, 70), "", group="Lines and Labels Settings", inline="90")
+colour_95Label  = input.color(color.new(color.red, 70), "", group="Lines and Labels Settings", inline="95")
+
+// ──────────────────────────────────────────────
+// FUNCTIONS
+// ──────────────────────────────────────────────
+Global_window() =>
+    endTime = timestamp(year, month, dayofmonth, 23, 59, 59)
+    time >= startTime and time <= endTime
+
+GetLabelSize() =>
+    switch labelSizeInput
+        "Huge"  => size.huge
+        "Large" => size.large
+        "Small" => size.small
+        "Tiny"  => size.tiny
+        => size.normal
+
+UseStartDate() =>
+    not useCustomStartDate or (useCustomStartDate and Global_window())
+
+// Calculate the All-Time High (ATH) during the defined period
+GetATH() =>
+    var float ath = 0.0
+    if UseStartDate() and high > ath
+        ath := high
+    ath
+
+// Calculate the retracement price level based on the ATH and retracement percentage
+CalculateRetracement(ath, retracementPerc) =>
+    (useCustomStartDate ? Global_window() : true) ? ath * (100 + retracementPerc) / 100 : na
+
+// Create a label at the specified price
+SetLabel(show_label, textValue, price, col) =>
+    if barstate.islast and showAllLabels and show_label
+        dt = time - time[1]
+        newX = time + labelOffset * dt
+        string textLabel = textValue + "% (" + str.tostring(price, format.mintick) + ")"
+        _label = label.new(x=newX, y=price, xloc=xloc.bar_time, style=label.style_none, text=textLabel, textcolor=color.new(col, 0), color=color.white, size=GetLabelSize())
+        label.delete(_label[1])
+
+// Calculate percentage increase and the midpoint between two retracement levels
+CalculatePercentageIncrease(x1, x2) =>
+    float percentageIncrease = -100 * (x2 - x1) / x2
+    float midPrice = (x2 + x1) / 2
+    [percentageIncrease, midPrice]
+
+// ──────────────────────────────────────────────
+// MAIN CALCULATIONS
+// ──────────────────────────────────────────────
+ath = GetATH()
+
+// Calculate each retracement level manually
+retracement_ath = CalculateRetracement(ath, value_ath)
+retracement_05  = CalculateRetracement(ath, value_05)
+retracement_10  = CalculateRetracement(ath, value_10)
+retracement_20  = CalculateRetracement(ath, value_20)
+retracement_30  = CalculateRetracement(ath, value_30)
+retracement_40  = CalculateRetracement(ath, value_40)
+retracement_50  = CalculateRetracement(ath, value_50)
+retracement_60  = CalculateRetracement(ath, value_60)
+retracement_70  = CalculateRetracement(ath, value_70)
+retracement_80  = CalculateRetracement(ath, value_80)
+retracement_90  = CalculateRetracement(ath, value_90)
+retracement_95  = CalculateRetracement(ath, value_95)
+
+// ──────────────────────────────────────────────
+// PLOTTING RETRACEMENT LINES
+// ──────────────────────────────────────────────
+plot(showAllLines and show_athLine ? retracement_ath : na, title="ATH" , color=colour_athLabel, linewidth=1, style=plot.style_linebr)
+plot(showAllLines and show_05Line  ? retracement_05  : na, title="Level -1", color=colour_05Label,  linewidth=1, style=plot.style_linebr)
+plot(showAllLines and show_10Line  ? retracement_10  : na, title="Level -2", color=colour_10Label,  linewidth=1, style=plot.style_linebr)
+plot(showAllLines and show_20Line  ? retracement_20  : na, title="Level -3", color=colour_20Label,  linewidth=1, style=plot.style_linebr)
+plot(showAllLines and show_30Line  ? retracement_30  : na, title="Level -4", color=colour_30Label,  linewidth=1, style=plot.style_linebr)
+plot(showAllLines and show_40Line  ? retracement_40  : na, title="Level -5", color=colour_40Label,  linewidth=1, style=plot.style_linebr)
+plot(showAllLines and show_50Line  ? retracement_50  : na, title="Level -6", color=colour_50Label,  linewidth=3, style=plot.style_linebr)
+plot(showAllLines and show_60Line  ? retracement_60  : na, title="Level -7", color=colour_60Label,  linewidth=1, style=plot.style_linebr)
+plot(showAllLines and show_70Line  ? retracement_70  : na, title="Level -9", color=colour_70Label,  linewidth=1, style=plot.style_linebr)
+plot(showAllLines and show_80Line  ? retracement_80  : na, title="Level -10", color=colour_80Label,  linewidth=1, style=plot.style_linebr)
+plot(showAllLines and show_90Line  ? retracement_90  : na, title="Level -11", color=colour_90Label,  linewidth=1, style=plot.style_linebr)
+plot(showAllLines and show_95Line  ? retracement_95  : na, title="Level -12", color=colour_95Label,  linewidth=1, style=plot.style_linebr)
+
+// ──────────────────────────────────────────────
+// PLOTTING RETRACEMENT LABELS
+// ──────────────────────────────────────────────
+SetLabel(show_athLabel, "ATH", retracement_ath, colour_athLabel)
+SetLabel(show_05Label,  str.tostring(value_05), retracement_05,  colour_05Label)
+SetLabel(show_10Label,  str.tostring(value_10), retracement_10,  colour_10Label)
+SetLabel(show_20Label,  str.tostring(value_20), retracement_20,  colour_20Label)
+SetLabel(show_30Label,  str.tostring(value_30), retracement_30,  colour_30Label)
+SetLabel(show_40Label,  str.tostring(value_40), retracement_40,  colour_40Label)
+SetLabel(show_50Label,  str.tostring(value_50), retracement_50,  colour_50Label)
+SetLabel(show_60Label,  str.tostring(value_60), retracement_60,  colour_60Label)
+SetLabel(show_70Label,  str.tostring(value_70), retracement_70,  colour_70Label)
+SetLabel(show_80Label,  str.tostring(value_80), retracement_80,  colour_80Label)
+SetLabel(show_90Label,  str.tostring(value_90), retracement_90,  colour_90Label)
+SetLabel(show_95Label,  str.tostring(value_95), retracement_95,  colour_95Label)
