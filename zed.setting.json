@@ -1,0 +1,48 @@
+// Zed settings
+{
+  "autosave": {
+    "after_delay": {
+      "milliseconds": 1000
+    }
+  },
+  "ui_font_family": "JetBrains Mono",
+  "buffer_font_family": "JetBrains Mono",
+  "ui_font_size": 19,
+  "buffer_font_size": 19,
+  "theme": {
+    "mode": "system",
+    "light": "One Light",
+    "dark": "4thwithme"
+  },
+
+  // Language-specific settings
+  "language": {
+    "python": {
+      "formatter": "black",
+      "linting": true,
+      "auto_format_on_save": true
+    },
+    "yaml": {
+      "linting": true,
+      "auto_format_on_save": true
+    },
+    "javascript": {
+      "formatter": "prettier",
+      "linting": true,
+      "auto_format_on_save": true
+    },
+    "go": {
+      "formatter": "gofmt",
+      "linting": true,
+      "auto_format_on_save": true
+    },
+    "terraform": {
+      "formatter": "terraform-fmt",
+      "auto_format_on_save": true
+    },
+    "ansible": {
+      "linting": true,
+      "auto_format_on_save": true
+    }
+  }
+}
