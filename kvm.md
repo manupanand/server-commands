@@ -28,6 +28,12 @@ sudo usermod -aG libvirt $(whoami)
 newgrp libvirt
 ```
 
+### Debian 
+```
+sudo apt update
+sudo apt install -y qemu-kvm libvirt-daemon-system libvirt-clients bridge-utils virtinst virt-manager
+
+```
 ---
 
 ## ✅ Verify Setup
