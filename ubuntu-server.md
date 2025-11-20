@@ -421,7 +421,7 @@ sudo katoolin3
 
 ---
 
-## ✔ This README now contains:
+## ✔ This README now contains: CEH
 
 * Full CEH toolset
 * Installation commands
